@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -17,20 +16,16 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.github.romanvht.mtgandroid.R
-import io.github.romanvht.mtgandroid.data.SENDER
 import io.github.romanvht.mtgandroid.data.SERVICE_FAILED_BROADCAST
 import io.github.romanvht.mtgandroid.data.SERVICE_STARTED_BROADCAST
 import io.github.romanvht.mtgandroid.data.SERVICE_STOPPED_BROADCAST
-import io.github.romanvht.mtgandroid.data.Sender
 import io.github.romanvht.mtgandroid.databinding.ActivityMainBinding
-import io.github.romanvht.mtgandroid.service.MtgProxyService
 import io.github.romanvht.mtgandroid.service.ServiceManager
 import io.github.romanvht.mtgandroid.utils.*
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private var proxyService: MtgProxyService? = null
-    private var serviceConnection: ServiceConnection? = null
+    private var isRunning = false
 
     companion object {
         private val TAG: String = MainActivity::class.java.simpleName
@@ -46,24 +41,27 @@ class MainActivity : AppCompatActivity() {
                 return
             }
 
-            val senderOrd = intent.getIntExtra(SENDER, -1)
-            val sender = Sender.entries.getOrNull(senderOrd)
-            if (sender == null) {
-                Log.w(TAG, "Received intent with unknown sender: $senderOrd")
-                return
-            }
-
             when (intent.action) {
-                SERVICE_STARTED_BROADCAST -> updateUI()
-                SERVICE_STOPPED_BROADCAST -> updateUI()
+                SERVICE_STARTED_BROADCAST -> {
+                    isRunning = true
+                    updateUIState()
+                }
+
+                SERVICE_STOPPED_BROADCAST -> {
+                    isRunning = false
+                    updateUIState()
+                }
+
                 SERVICE_FAILED_BROADCAST -> {
+                    isRunning = false
                     MaterialAlertDialogBuilder(this@MainActivity)
                         .setTitle(getString(R.string.error))
                         .setMessage(getString(R.string.error_start_failed))
                         .setPositiveButton(getString(R.string.ok), null)
                         .show()
-                    updateUI()
+                    updateUIState()
                 }
+
                 else -> Log.w(TAG, "Unknown action: ${intent.action}")
             }
         }
@@ -92,19 +90,17 @@ class MainActivity : AppCompatActivity() {
 
         loadSettings()
         setupClickListeners()
-        bindToService()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        unbindFromService()
         BroadcastUtils.unregisterReceiver(this, receiver)
     }
 
     override fun onResume() {
         super.onResume()
         loadSettings()
-        updateUI()
+        updateUIState()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -115,13 +111,14 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_settings -> {
-                if (proxyService?.isRunning() == true) {
+                if (isRunning) {
                     Toast.makeText(this, R.string.settings_unavailable, Toast.LENGTH_SHORT).show()
                 } else {
                     startActivity(Intent(this, SettingsActivity::class.java))
                 }
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -154,58 +151,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupClickListeners() {
         binding.connectButton.setOnClickListener {
-            if (proxyService?.isRunning() == true) {
-                stopProxy()
+            if (isRunning) {
+                ServiceManager.stop(this)
             } else {
-                startProxy()
+                ServiceManager.start(this)
             }
         }
 
         binding.telegramLinkInput.isFocusable = false
         binding.telegramLinkInput.isClickable = true
-
         binding.telegramLinkInput.setOnClickListener {
             copyLinkToClipboard()
         }
-    }
-
-    private fun startProxy() {
-        ServiceManager.startService(this)
-
-        if (serviceConnection == null) {
-            bindToService()
-        }
-    }
-
-    private fun stopProxy() {
-        ServiceManager.stopService(this)
-        updateUI()
-    }
-
-    private fun bindToService() {
-        serviceConnection = ServiceManager.bindService(this, object : ServiceManager.ServiceCallback {
-            override fun onServiceConnected(service: MtgProxyService) {
-                proxyService = service
-                updateUI()
-            }
-
-            override fun onServiceDisconnected() {
-                proxyService = null
-                updateUI()
-            }
-        })
-    }
-
-    private fun unbindFromService() {
-        serviceConnection?.let {
-            ServiceManager.unbindService(this, it)
-            serviceConnection = null
-        }
-    }
-
-    private fun updateUI() {
-        val isRunning = proxyService?.isRunning() ?: false
-        updateUIState(isRunning)
     }
 
     private fun copyLinkToClipboard() {
@@ -221,7 +178,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateUIState(isRunning: Boolean) {
+    private fun updateUIState() {
         if (isRunning) {
             binding.statusText.text = getString(R.string.status_running)
             binding.connectButton.text = getString(R.string.disconnect)

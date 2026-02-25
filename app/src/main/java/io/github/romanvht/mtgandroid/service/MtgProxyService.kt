@@ -1,10 +1,9 @@
 package io.github.romanvht.mtgandroid.service
 
+import android.app.Notification
 import android.content.Intent
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
-import android.os.Binder
 import android.os.Build
-import android.os.IBinder
 import android.util.Log
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
@@ -24,7 +23,6 @@ import kotlinx.coroutines.withContext
 
 class MtgProxyService : LifecycleService() {
 
-    private val binder = LocalBinder()
     private val mutex = Mutex()
 
     companion object {
@@ -34,15 +32,8 @@ class MtgProxyService : LifecycleService() {
 
         private enum class ServiceStatus { Connected, Disconnected, Failed }
         private var status: ServiceStatus = ServiceStatus.Disconnected
-    }
 
-    inner class LocalBinder : Binder() {
-        fun getService(): MtgProxyService = this@MtgProxyService
-    }
-
-    override fun onBind(intent: Intent): IBinder {
-        super.onBind(intent)
-        return binder
+        fun isRunning() = status == ServiceStatus.Connected
     }
 
     override fun onCreate() {
@@ -52,24 +43,28 @@ class MtgProxyService : LifecycleService() {
             NOTIFICATION_CHANNEL_ID,
             R.string.notification_channel_name
         )
-        Log.d(TAG, "Service created")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
-        Log.d(TAG, "onStartCommand: action=${intent?.action}, status=$status")
+        startForeground()
 
-        when (intent?.action) {
-            START_ACTION -> lifecycleScope.launch { start() }
-            STOP_ACTION  -> lifecycleScope.launch { stop() }
-            else -> Log.w(TAG, "Unknown action: ${intent?.action}")
+        return when (val action = intent?.action) {
+            START_ACTION -> {
+                lifecycleScope.launch { start() }
+                START_STICKY
+            }
+            STOP_ACTION -> {
+                lifecycleScope.launch { stop() }
+                START_NOT_STICKY
+            }
+            else -> {
+                Log.w(TAG, "Unknown action: $action")
+                START_NOT_STICKY
+            }
         }
-
-        return START_STICKY
     }
-
-    fun isRunning(): Boolean = status == ServiceStatus.Connected
 
     private suspend fun start() {
         Log.i(TAG, "Starting")
@@ -80,10 +75,11 @@ class MtgProxyService : LifecycleService() {
         }
 
         try {
-            startForegroundService()
-
             mutex.withLock {
-                if (status == ServiceStatus.Connected) return
+                if (status == ServiceStatus.Connected) {
+                    Log.w(TAG, "Proxy already connected")
+                    return@withLock
+                }
 
                 val secret = PreferencesUtils.getSecret(this)
                 val bindAddress = PreferencesUtils.getBindAddress(this)
@@ -100,7 +96,6 @@ class MtgProxyService : LifecycleService() {
 
                 updateStatus(ServiceStatus.Connected)
             }
-
         } catch (e: Exception) {
             Log.e(TAG, "Failed to start proxy", e)
             updateStatus(ServiceStatus.Failed)
@@ -108,17 +103,8 @@ class MtgProxyService : LifecycleService() {
         }
     }
 
-    private fun startForegroundService() {
-        val ip = PreferencesUtils.getIpAddress(this)
-        val port = PreferencesUtils.getPortInt(this)
-
-        val notification = createServiceNotification(
-            this,
-            NOTIFICATION_CHANNEL_ID,
-            ip,
-            port
-        )
-
+    private fun startForeground() {
+        val notification: Notification = createNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(
                 FOREGROUND_SERVICE_ID,
@@ -140,13 +126,6 @@ class MtgProxyService : LifecycleService() {
             updateStatus(ServiceStatus.Disconnected)
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-        } else {
-            @Suppress("DEPRECATION")
-            stopForeground(true)
-        }
-
         stopSelf()
     }
 
@@ -160,5 +139,15 @@ class MtgProxyService : LifecycleService() {
             ServiceStatus.Disconnected -> BroadcastUtils.sendServiceStopped(this)
             ServiceStatus.Failed       -> BroadcastUtils.sendServiceFailed(this)
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            QuickTileService.updateTile()
+        }
+    }
+
+    private fun createNotification(): Notification {
+        val ip = PreferencesUtils.getIpAddress(this)
+        val port = PreferencesUtils.getPortInt(this)
+        return createServiceNotification(this, NOTIFICATION_CHANNEL_ID, ip, port)
     }
 }
