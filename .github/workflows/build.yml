@@ -32,8 +32,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Download prebuild mtg binaries
-        run:  chmod +x ./download_binaries.sh
-              sudo bash ./download_binaries.sh
+        run:  chmod +x ./download_binaries.sh && ./download_binaries.sh
 
       - name: Build with Gradle
         run: ./gradlew assembleRelease --no-daemon
