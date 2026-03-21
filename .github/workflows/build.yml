@@ -42,7 +42,7 @@ jobs:
               ./download_binaries.sh
 
       - name: Build with Gradle
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease --debug
 
       - name: Upload
         uses: actions/upload-artifact@main
