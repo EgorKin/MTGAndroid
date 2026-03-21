@@ -5,13 +5,7 @@ on:
   pull_request:
     paths-ignore:
       - '*.md'
-  push:
-    branches: 
-      - master
-      - main
-    paths-ignore:
-      - '*.md'
-
+  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -42,7 +36,7 @@ jobs:
               ./download_binaries.sh
 
       - name: Build with Gradle
-        run: ./gradlew assembleRelease --debug
+        run: ./gradlew assembleRelease --no-daemon
 
       - name: Upload
         uses: actions/upload-artifact@main
