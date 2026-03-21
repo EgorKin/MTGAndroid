@@ -32,7 +32,7 @@ jobs:
           cache: gradle
 
       - name: Accept Licenses
-        uses: android-actions/setup-android@v5
+        uses: android-actions/setup-android@v4
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
