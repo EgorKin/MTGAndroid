@@ -91,6 +91,11 @@
             app:iconSpaceReserved="false" />
 
         <Preference
+            android:key="mtg_version"
+            android:title="MTG"
+            app:iconSpaceReserved="false" />
+        
+        <Preference
             android:title="@string/about_developer"
             android:summary="@string/about_developer_value"
             app:iconSpaceReserved="false" />
