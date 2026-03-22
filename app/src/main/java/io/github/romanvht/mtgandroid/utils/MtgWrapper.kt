@@ -15,8 +15,9 @@ object MtgWrapper {
     private var stdoutThread: Thread? = null
     private var stderrThread: Thread? = null
 
-    fun AppendLog(text: String) {
-        private lateinit var binding: ActivityMainBinding
+    fun AppendLog(context: Context, text: String) {
+        lateinit var binding: ActivityMainBinding
+        val layoutInflater = LayoutInflater.from(context)
         binding = ActivityMainBinding.inflate(layoutInflater)
         binding.logTextView.append("\n" + text)
     }
@@ -30,7 +31,7 @@ object MtgWrapper {
             }
 
             Log.d(TAG, "Binary path: ${mtgBinary.absolutePath}")
-            AppendLog("Binary path: ${mtgBinary.absolutePath}")
+            AppendLog(context, "Binary path: ${mtgBinary.absolutePath}")
 
             val processBuilder = ProcessBuilder(
                 mtgBinary.absolutePath,
@@ -140,7 +141,7 @@ object MtgWrapper {
                         while (reader.readLine().also { line = it } != null) {
                             Log.d(TAG, "MTG stdout: $line")
                             output.append(line).append("\n")
-                            AppendLog("MTG stdout: $line")
+                            AppendLog(context, "MTG stdout: $line")
                         }
                     }
                 } catch (e: Exception) {
@@ -155,7 +156,7 @@ object MtgWrapper {
                         while (reader.readLine().also { line = it } != null) {
                             Log.e(TAG, "MTG stderr: $line")
                             errorOutput.append(line).append("\n")
-                            AppendLog("MTG stderr: $line")
+                            AppendLog(context, "MTG stderr: $line")
                         }
                     }
                 } catch (e: Exception) {
@@ -182,7 +183,7 @@ object MtgWrapper {
                 val secret = output.toString().trim()
                 if (secret.isNotEmpty()) {
                     Log.d(TAG, "Generated secret successfully")
-                    AppendLog("Generated secret successfully")
+                    AppendLog(context, "Generated secret successfully")
                     secret
                 } else {
                     Log.e(TAG, "Secret is empty")
@@ -190,7 +191,7 @@ object MtgWrapper {
                 }
             } else {
                 Log.e(TAG, "generate-secret failed with exit code: $exitCode")
-                AppendLog("generate-secret failed with exit code: $exitCode")
+                AppendLog(context, "generate-secret failed with exit code: $exitCode")
                 null
             }
         } catch (e: Exception) {
@@ -225,7 +226,7 @@ object MtgWrapper {
                         var line: String?
                         while (reader.readLine().also { line = it } != null) {
                             Log.d(TAG, "MTG: $line")
-                            AppendLog("MTG: $line")
+                            AppendLog(context, "MTG: $line")
                         }
                     }
                 } catch (e: InterruptedIOException) {
@@ -241,7 +242,7 @@ object MtgWrapper {
                         var line: String?
                         while (reader.readLine().also { line = it } != null) {
                             Log.e(TAG, "MTG error: $line")
-                            AppendLog("MTG error: $line")
+                            AppendLog(context, "MTG error: $line")
                         }
                     }
                 } catch (e: InterruptedIOException) {
