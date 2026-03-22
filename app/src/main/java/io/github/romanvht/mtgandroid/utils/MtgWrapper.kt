@@ -17,12 +17,10 @@ object MtgWrapper {
     private var stderrThread: Thread? = null
 
     fun AppendLog(context: Context, text: String) {
-        context.findViewById<TextView>(R.id.logTextView).append("\n" + text)
-        
-        //lateinit var binding: ActivityMainBinding
-        //val layoutInflater = LayoutInflater.from(context)
-        //binding = ActivityMainBinding.inflate(layoutInflater)
-        //binding.logTextView.append("\n" + text)
+        lateinit var binding: ActivityMainBinding
+        val layoutInflater = LayoutInflater.from(context)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding.logTextView.append("\n" + text)
     }
     
     fun GetVersion(context: Context): String? {
