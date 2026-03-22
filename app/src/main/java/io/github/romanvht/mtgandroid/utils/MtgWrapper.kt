@@ -7,7 +7,7 @@ import java.io.File
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.InterruptedIOException
-import io.github.romanvht.mtgandroid.ui.activities.MainActivity.kt
+import io.github.romanvht.mtgandroid.ui.activities.MainActivity
 
 object MtgWrapper {
     private const val TAG = "MtgWrapper"
