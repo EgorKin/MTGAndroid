@@ -208,7 +208,7 @@
                             android:inputType="textUri"
                             android:textSize="12sp" />
 
-                    </ScrollView
+                    </ScrollView>
 
                 </LinearLayout>
 
