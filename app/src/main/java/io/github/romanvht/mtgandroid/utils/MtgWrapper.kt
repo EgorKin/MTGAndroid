@@ -14,6 +14,91 @@ object MtgWrapper {
     private var stdoutThread: Thread? = null
     private var stderrThread: Thread? = null
 
+    fun GetVersion(context: Context): String? {
+        return try {
+            val mtgBinary = getMtgBinary(context)
+            if (mtgBinary == null) {
+                Log.e(TAG, "Failed to get MTG binary")
+                return null
+            }
+
+            Log.d(TAG, "Binary path: ${mtgBinary.absolutePath}")
+
+            val processBuilder = ProcessBuilder(
+                mtgBinary.absolutePath,
+                "-v"
+            )
+
+            processBuilder.directory(context.filesDir)
+            processBuilder.redirectErrorStream(true)
+
+            val process = processBuilder.start()
+
+            val output = StringBuilder()
+            val errorOutput = StringBuilder()
+
+            val stdoutReader = Thread {
+                try {
+                    BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
+                        var line: String?
+                        while (reader.readLine().also { line = it } != null) {
+                            Log.d(TAG, "MTG stdout: $line")
+                            output.append(line).append("\n")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error reading stdout", e)
+                }
+            }
+
+            val stderrReader = Thread {
+                try {
+                    BufferedReader(InputStreamReader(process.errorStream)).use { reader ->
+                        var line: String?
+                        while (reader.readLine().also { line = it } != null) {
+                            Log.e(TAG, "MTG stderr: $line")
+                            errorOutput.append(line).append("\n")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error reading stderr", e)
+                }
+            }
+
+            stdoutReader.start()
+            stderrReader.start()
+
+            val exitCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                process.waitFor(10, java.util.concurrent.TimeUnit.SECONDS)
+                process.exitValue()
+            } else {
+                process.waitFor()
+            }
+
+            stdoutReader.join(1000)
+            stderrReader.join(1000)
+
+            Log.d(TAG, "Process exit code: $exitCode")
+
+            if (exitCode == 0) {
+                val version = output.toString().trim()
+                if (version.isNotEmpty()) {
+                    Log.d(TAG, "Get version successfully")
+                    version
+                } else {
+                    Log.e(TAG, "version is empty")
+                    null
+                }
+            } else {
+                Log.e(TAG, "get version failed with exit code: $exitCode")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting version", e)
+            null
+        }
+    }
+
     fun generateSecret(context: Context, domain: String): String? {
         return try {
             val mtgBinary = getMtgBinary(context)
