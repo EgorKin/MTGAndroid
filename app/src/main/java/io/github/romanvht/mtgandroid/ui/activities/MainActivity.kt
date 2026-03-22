@@ -123,6 +123,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    public fun AppendLog(context: Context, text: String) {
+        binding.logTextView.append("\n" + text)
+    }
+    
     private fun loadSettings() {
         val ip = PreferencesUtils.getIpAddress(this)
         val port = PreferencesUtils.getPort(this)
