@@ -16,13 +16,7 @@ object MtgWrapper {
     private var stdoutThread: Thread? = null
     private var stderrThread: Thread? = null
 
-    fun AppendLog(context: Context, text: String) {
-        lateinit var binding: ActivityMainBinding
-        val layoutInflater = LayoutInflater.from(context)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        binding.logTextView.append("\n" + text)
-    }
-    
+
     fun GetVersion(context: Context): String? {
         return try {
             val mtgBinary = getMtgBinary(context)
@@ -32,7 +26,7 @@ object MtgWrapper {
             }
 
             Log.d(TAG, "Binary path: ${mtgBinary.absolutePath}")
-            AppendLog(context, "Binary path: ${mtgBinary.absolutePath}")
+            MainActivity::AppendLog(context, "Binary path: ${mtgBinary.absolutePath}")
 
             val processBuilder = ProcessBuilder(
                 mtgBinary.absolutePath,
