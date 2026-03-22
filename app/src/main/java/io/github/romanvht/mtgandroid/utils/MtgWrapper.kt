@@ -133,7 +133,8 @@ object MtgWrapper {
                         while (reader.readLine().also { line = it } != null) {
                             Log.d(TAG, "MTG stdout: $line")
                             output.append(line).append("\n")
-                            runOnUiThread {binding.logTextView.append("\n" + "MTG stdout: $line")}
+                            val textView: TextView = findViewById(R.id.logTextView) as TextView
+                            textView.text.append("\n" + "MTG stdout: $line")
                         }
                     }
                 } catch (e: Exception) {
