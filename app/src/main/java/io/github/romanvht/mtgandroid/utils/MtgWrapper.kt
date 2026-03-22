@@ -25,7 +25,7 @@ object MtgWrapper {
             }
 
             Log.d(TAG, "Binary path: ${mtgBinary.absolutePath}")
-            (MainActivity::AppendLog)(context, "Binary path: ${mtgBinary.absolutePath}")
+            (MainActivity.AppendLog)(context, "Binary path: ${mtgBinary.absolutePath}")
 
             val processBuilder = ProcessBuilder(
                 mtgBinary.absolutePath,
