@@ -7,6 +7,7 @@ import java.io.File
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.InterruptedIOException
+import io.github.romanvht.mtgandroid.databinding.ActivityMainBinding
 
 object MtgWrapper {
     private const val TAG = "MtgWrapper"
@@ -14,6 +15,12 @@ object MtgWrapper {
     private var stdoutThread: Thread? = null
     private var stderrThread: Thread? = null
 
+    fun AppendLog(text: String) {
+        private lateinit var binding: ActivityMainBinding
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding.logTextView.append("\n" + text)
+    }
+    
     fun GetVersion(context: Context): String? {
         return try {
             val mtgBinary = getMtgBinary(context)
@@ -23,7 +30,7 @@ object MtgWrapper {
             }
 
             Log.d(TAG, "Binary path: ${mtgBinary.absolutePath}")
-            runOnUiThread {binding.logTextView.append("\n" + "Binary path: ${mtgBinary.absolutePath}")}
+            AppendLog("Binary path: ${mtgBinary.absolutePath}")
 
             val processBuilder = ProcessBuilder(
                 mtgBinary.absolutePath,
@@ -133,8 +140,7 @@ object MtgWrapper {
                         while (reader.readLine().also { line = it } != null) {
                             Log.d(TAG, "MTG stdout: $line")
                             output.append(line).append("\n")
-                            val textView: TextView = findViewById(R.id.logTextView) as TextView
-                            textView.text.append("\n" + "MTG stdout: $line")
+                            AppendLog("MTG stdout: $line")
                         }
                     }
                 } catch (e: Exception) {
@@ -149,7 +155,7 @@ object MtgWrapper {
                         while (reader.readLine().also { line = it } != null) {
                             Log.e(TAG, "MTG stderr: $line")
                             errorOutput.append(line).append("\n")
-                            runOnUiThread {binding.logTextView.append("\n" + "MTG stderr: $line")}
+                            AppendLog("MTG stderr: $line")
                         }
                     }
                 } catch (e: Exception) {
@@ -176,7 +182,7 @@ object MtgWrapper {
                 val secret = output.toString().trim()
                 if (secret.isNotEmpty()) {
                     Log.d(TAG, "Generated secret successfully")
-                    runOnUiThread {binding.logTextView.append("\n" + "Generated secret successfully")}
+                    AppendLog("Generated secret successfully")
                     secret
                 } else {
                     Log.e(TAG, "Secret is empty")
@@ -184,7 +190,7 @@ object MtgWrapper {
                 }
             } else {
                 Log.e(TAG, "generate-secret failed with exit code: $exitCode")
-                runOnUiThread {binding.logTextView.append("\n" + "generate-secret failed with exit code: $exitCode")}
+                AppendLog("generate-secret failed with exit code: $exitCode")
                 null
             }
         } catch (e: Exception) {
@@ -219,7 +225,7 @@ object MtgWrapper {
                         var line: String?
                         while (reader.readLine().also { line = it } != null) {
                             Log.d(TAG, "MTG: $line")
-                            runOnUiThread {binding.logTextView.append("\n" + "MTG: $line")}
+                            AppendLog("MTG: $line")
                         }
                     }
                 } catch (e: InterruptedIOException) {
@@ -235,7 +241,7 @@ object MtgWrapper {
                         var line: String?
                         while (reader.readLine().also { line = it } != null) {
                             Log.e(TAG, "MTG error: $line")
-                            runOnUiThread {binding.logTextView.append("\n" + "MTG error: $line")}
+                            AppendLog("MTG error: $line")
                         }
                     }
                 } catch (e: InterruptedIOException) {
