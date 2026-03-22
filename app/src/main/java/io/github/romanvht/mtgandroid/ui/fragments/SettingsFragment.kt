@@ -24,8 +24,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         setupAdvancedSettingsSummaries()
         setupValidation()
 
-        val secret = MtgWrapper.GetVersion(requireContext())
-        if (secret != null) {
+        val version = MtgWrapper.GetVersion(requireContext())
+        if (version != null) {
             findPreference<Preference>("app_version")?.summary = BuildConfig.VERSION_NAME + " MTG: " + version
         }
         else
