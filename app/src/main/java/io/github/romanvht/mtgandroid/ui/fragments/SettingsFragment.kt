@@ -26,10 +26,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         val version = MtgWrapper.GetVersion(requireContext())
         if (version != null) {
-            findPreference<Preference>("app_version")?.summary = BuildConfig.VERSION_NAME + " MTG: " + version
+            findPreference<Preference>("mtg_version")?.summary = version
         }
-        else
-            findPreference<Preference>("app_version")?.summary = BuildConfig.VERSION_NAME
+        
+        findPreference<Preference>("app_version")?.summary = BuildConfig.VERSION_NAME
 
         findPreference<Preference>("github_link")?.setOnPreferenceClickListener {
             val intent = Intent(Intent.ACTION_VIEW).apply {
