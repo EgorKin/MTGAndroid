@@ -8,6 +8,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.InterruptedIOException
 import io.github.romanvht.mtgandroid.databinding.ActivityMainBinding
+import io.github.romanvht.mtgandroid.R
 
 object MtgWrapper {
     private const val TAG = "MtgWrapper"
@@ -16,10 +17,12 @@ object MtgWrapper {
     private var stderrThread: Thread? = null
 
     fun AppendLog(context: Context, text: String) {
-        lateinit var binding: ActivityMainBinding
-        val layoutInflater = LayoutInflater.from(context)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        binding.logTextView.append("\n" + text)
+        context.findViewById<TextView>(R.id.logTextView).append("\n" + text)
+        
+        //lateinit var binding: ActivityMainBinding
+        //val layoutInflater = LayoutInflater.from(context)
+        //binding = ActivityMainBinding.inflate(layoutInflater)
+        //binding.logTextView.append("\n" + text)
     }
     
     fun GetVersion(context: Context): String? {
