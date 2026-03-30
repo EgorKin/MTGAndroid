@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-VERSION="2.2.3"
+VERSION="2.2.6"
 BASE_URL="https://github.com/9seconds/mtg/releases/download/v${VERSION}"
 
 echo "=== Downloading mtg v${VERSION} binaries for Android ==="
