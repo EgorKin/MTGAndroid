@@ -12,7 +12,6 @@ object PreferencesUtils {
     private const val KEY_SECRET = "secret"
 
     private const val KEY_CONCURRENCY = "concurrency"
-    private const val KEY_TCP_BUFFER = "tcp_buffer"
     private const val KEY_DOH_IP = "doh_ip"
     private const val KEY_TIMEOUT = "timeout"
     private const val KEY_ANTIREPLAY_CACHE = "antireplay_cache"
@@ -23,7 +22,6 @@ object PreferencesUtils {
     private const val DEFAULT_SECRET = ""
 
     private const val DEFAULT_CONCURRENCY = 8192
-    private const val DEFAULT_TCP_BUFFER_KB = 4
     private const val DEFAULT_DOH_IP = "1.1.1.1"
     private const val DEFAULT_TIMEOUT = 10
     private const val DEFAULT_ANTIREPLAY_CACHE_MB = 1
