@@ -161,7 +161,7 @@
                         android:layout_height="wrap_content"
                         android:hint="@string/proxy_link"
                         app:endIconMode="custom"
-                        app:endIconDrawable="@drawable/ic_copy">
+                        app:endIconDrawable="@drawable/ic_go">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/telegramLinkInput"
