@@ -10,9 +10,13 @@ import androidx.lifecycle.lifecycleScope
 import io.github.romanvht.mtgandroid.R
 import io.github.romanvht.mtgandroid.data.START_ACTION
 import io.github.romanvht.mtgandroid.data.STOP_ACTION
+import io.github.romanvht.mtgandroid.data.TransportMode
 import io.github.romanvht.mtgandroid.utils.BroadcastUtils
+import io.github.romanvht.mtgandroid.utils.DebugLogStore
 import io.github.romanvht.mtgandroid.utils.MtgWrapper
 import io.github.romanvht.mtgandroid.utils.PreferencesUtils
+import io.github.romanvht.mtgandroid.utils.ValidationUtils
+import io.github.romanvht.mtgandroid.utils.WsProxyWrapper
 import io.github.romanvht.mtgandroid.utils.createServiceNotification
 import io.github.romanvht.mtgandroid.utils.registerNotificationChannel
 import kotlinx.coroutines.Dispatchers
@@ -67,7 +71,7 @@ class MtgProxyService : LifecycleService() {
     }
 
     private suspend fun start() {
-        Log.i(TAG, "Starting")
+        DebugLogStore.i(TAG, "Starting")
 
         if (status == ServiceStatus.Connected) {
             Log.w(TAG, "Proxy already connected")
@@ -83,13 +87,22 @@ class MtgProxyService : LifecycleService() {
 
                 val secret = PreferencesUtils.getSecret(this)
                 val bindAddress = PreferencesUtils.getBindAddress(this)
+                val transportMode = TransportMode.fromValue(PreferencesUtils.getTransportMode(this))
 
                 if (secret.isEmpty()) {
                     throw IllegalStateException("Secret is empty")
                 }
+                if (!ValidationUtils.isValidSecretForMode(secret, transportMode.value)) {
+                    throw IllegalStateException("Secret format is invalid for transport $transportMode")
+                }
+
+                DebugLogStore.d(TAG, "Starting transport=$transportMode bind=$bindAddress")
 
                 val success = withContext(Dispatchers.IO) {
-                    MtgWrapper.startProxy(this@MtgProxyService, bindAddress, secret)
+                    when (transportMode) {
+                        TransportMode.WebSocket -> WsProxyWrapper.startProxy(this@MtgProxyService, bindAddress, secret)
+                        TransportMode.MtgLegacy -> MtgWrapper.startProxy(this@MtgProxyService, bindAddress, secret)
+                    }
                 }
 
                 if (!success) throw IllegalStateException("Native proxy failed")
@@ -97,7 +110,7 @@ class MtgProxyService : LifecycleService() {
                 updateStatus(ServiceStatus.Connected)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to start proxy", e)
+            DebugLogStore.e(TAG, "Failed to start proxy", e)
             updateStatus(ServiceStatus.Failed)
             stop()
         }
@@ -117,11 +130,12 @@ class MtgProxyService : LifecycleService() {
     }
 
     private suspend fun stop() {
-        Log.i(TAG, "Stopping")
+        DebugLogStore.i(TAG, "Stopping")
 
         mutex.withLock {
             withContext(Dispatchers.IO) {
                 MtgWrapper.stopProxy()
+                WsProxyWrapper.stopProxy()
             }
             updateStatus(ServiceStatus.Disconnected)
         }
@@ -130,7 +144,7 @@ class MtgProxyService : LifecycleService() {
     }
 
     private fun updateStatus(newStatus: ServiceStatus) {
-        Log.d(TAG, "Proxy status changed from $status to $newStatus")
+        DebugLogStore.d(TAG, "Proxy status changed from $status to $newStatus")
 
         status = newStatus
 
