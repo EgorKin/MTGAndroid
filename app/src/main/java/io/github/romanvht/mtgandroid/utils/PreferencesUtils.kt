@@ -12,7 +12,6 @@ object PreferencesUtils {
     private const val KEY_SECRET = "secret"
 
     private const val KEY_CONCURRENCY = "concurrency"
-    private const val KEY_TCP_BUFFER = "tcp_buffer"
     private const val KEY_DOH_IP = "doh_ip"
     private const val KEY_TRANSPORT_MODE = "transport_mode"
     private const val KEY_WS_TEMPLATE = "ws_template"
@@ -25,7 +24,6 @@ object PreferencesUtils {
     private const val DEFAULT_SECRET = ""
 
     private const val DEFAULT_CONCURRENCY = 8192
-    private const val DEFAULT_TCP_BUFFER_KB = 4
     private const val DEFAULT_DOH_IP = "1.1.1.1"
     private const val DEFAULT_TRANSPORT_MODE = "websocket"
     private const val DEFAULT_WS_TEMPLATE = "wss://kws%d.web.telegram.org/apiws"
