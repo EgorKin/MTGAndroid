@@ -17,6 +17,8 @@
     <string name="telegram_link">Ссылка для Telegram</string>
     <string name="proxy_link">Прокси ссылка</string>
     <string name="copied_to_clipboard">Скопировано в буфер обмена</string>
+    <string name="logs_copied_to_clipboard">Логи скопированы в буфер обмена</string>
+    <string name="copy_debug_logs">Скопировать debug-логи</string>
 
     <string name="category_connection">Подключение</string>
     <string name="category_secret">Секрет</string>
@@ -45,17 +47,33 @@
     <string name="error_invalid_ip">Неверный IP</string>
     <string name="error_invalid_port">Порт должен быть от 1 до 65535</string>
     <string name="error_start_failed">Не удалось запустить прокси</string>
+    <string name="error_start_failed_with_reason">Не удалось запустить прокси.\n\nДиагностика:\n%1$s</string>
     <string name="error_empty_domain">Введите домен для генерации секрета</string>
     <string name="warning_privileged_port">Рекомендуется использовать порт больше 1024</string>
     <string name="error_invalid_concurrency">Значение должно быть от 1 до 65535</string>
     <string name="error_invalid_timeout">Значение должно быть от 1 до 30 секунд</string>
     <string name="error_invalid_antireplay_cache">Значение должно быть от 1 до 10 MB</string>
+    <string name="error_invalid_ws_template">Шаблон должен начинаться с wss:// и содержать /apiws</string>
+    <string name="error_invalid_secret">Неверный формат секрета (ожидается hex-строка)</string>
+    <string name="no_diagnostics">Диагностика отсутствует</string>
 
     <string name="doh_ip">DNS</string>
+    <string name="transport_mode">Транспорт</string>
+    <string name="ws_template">WS URL шаблон</string>
     <string name="concurrency">Максимум соединений</string>
     <string name="timeout">Таймаут сети (сек)</string>
     <string name="antireplay_cache">Размер кэша (MB)</string>
 
+    <string-array name="transport_mode_entries">
+        <item>WebSocket (экспериментально)</item>
+        <item>MTG (legacy)</item>
+    </string-array>
+
+    <string-array name="transport_mode_values">
+        <item>websocket</item>
+        <item>mtg</item>
+    </string-array>
+    
     <string name="category_about">О программе</string>
     <string name="about_version">Версия</string>
     <string name="about_developer">Разработчик</string>
