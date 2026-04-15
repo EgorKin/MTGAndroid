@@ -54,9 +54,10 @@ class MainActivity : AppCompatActivity() {
 
                 SERVICE_FAILED_BROADCAST -> {
                     isRunning = false
+                    val diagnostics = DebugLogStore.latestError() ?: getString(R.string.no_diagnostics)
                     MaterialAlertDialogBuilder(this@MainActivity)
                         .setTitle(getString(R.string.error))
-                        .setMessage(getString(R.string.error_start_failed))
+                        .setMessage(getString(R.string.error_start_failed_with_reason, diagnostics))
                         .setPositiveButton(getString(R.string.ok), null)
                         .show()
                     updateUIState()
@@ -118,13 +119,13 @@ class MainActivity : AppCompatActivity() {
                 }
                 true
             }
+            R.id.action_copy_logs -> {
+                copyDebugLogsToClipboard()
+                true
+            }
 
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    public fun AppendLog(context: Context, text: String) {
-        binding.logTextView.append("\n" + text)
     }
     
     private fun loadSettings() {
@@ -180,6 +181,16 @@ class MainActivity : AppCompatActivity() {
                 toastMessage = getString(R.string.copied_to_clipboard)
             )
         }
+    }
+
+    private fun copyDebugLogsToClipboard() {
+        val logs = DebugLogStore.export().ifBlank { getString(R.string.no_diagnostics) }
+        ClipboardUtils.copyToClipboard(
+            context = this,
+            text = logs,
+            label = "MTG Proxy Diagnostics",
+            toastMessage = getString(R.string.logs_copied_to_clipboard)
+        )
     }
 
     private fun updateUIState() {
