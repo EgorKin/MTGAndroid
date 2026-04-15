@@ -341,9 +341,11 @@ object MtgWrapper {
                 return nativeLibFile
             }
 
+            Log.e(TAG, "Native library not found or not executable")
             DebugLogStore.e(TAG, "Native library not found or not executable")
             null
         } catch (e: Exception) {
+            Log.e(TAG, "Error getting MTG binary", e)
             DebugLogStore.e(TAG, "Error getting MTG binary", e)
             null
         }
