@@ -8,4 +8,10 @@
         android:icon="@drawable/ic_settings"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/action_copy_logs"
+        android:title="@string/copy_debug_logs"
+        android:icon="@drawable/ic_copy"
+        app:showAsAction="never" />
+    
 </menu>
