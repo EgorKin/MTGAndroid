@@ -3,7 +3,7 @@ package io.github.romanvht.mtgandroid.utils
 object FormatUtils {
 
     fun generateTelegramLink(ip: String, port: String, secret: String): String {
-        return if (secret.isNotBlank()) {
+        return if (ValidationUtils.isValidProxySecret(secret)) {
             "tg://proxy?server=$ip&port=$port&secret=$secret"
         } else {
             ""
