@@ -64,7 +64,7 @@ class MtgProxyService : LifecycleService() {
                 START_NOT_STICKY
             }
             else -> {
-                Log.w(TAG, "Unknown action: $action")
+                DebugLogStore.w(TAG, "Unknown action: $action")
                 START_NOT_STICKY
             }
         }
@@ -74,14 +74,14 @@ class MtgProxyService : LifecycleService() {
         DebugLogStore.i(TAG, "Starting")
 
         if (status == ServiceStatus.Connected) {
-            Log.w(TAG, "Proxy already connected")
+            DebugLogStore.w(TAG, "Proxy already connected")
             return
         }
 
         try {
             mutex.withLock {
                 if (status == ServiceStatus.Connected) {
-                    Log.w(TAG, "Proxy already connected")
+                    DebugLogStore.w(TAG, "Proxy already connected")
                     return@withLock
                 }
 
