@@ -25,7 +25,7 @@ download_and_extract() {
 
     echo "  Extracting to ${target_dir}..."
 
-    #rm -rf temp_downloads/mtg*
+    rm -f temp_downloads/mtg
 
     tar -xzf "temp_downloads/${file}" -C temp_downloads --strip-components=1
 
