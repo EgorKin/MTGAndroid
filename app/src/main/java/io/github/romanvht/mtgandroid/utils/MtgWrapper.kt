@@ -20,11 +20,11 @@ object MtgWrapper {
         return try {
             val mtgBinary = getMtgBinary(context)
             if (mtgBinary == null) {
-                Log.e(TAG, "Failed to get MTG binary")
+                DebugLogStore.e(TAG, "Failed to get MTG binary")
                 return null
             }
 
-            Log.d(TAG, "Binary path: ${mtgBinary.absolutePath}")
+            DebugLogStore.d(TAG, "Binary path: ${mtgBinary.absolutePath}")
             //(MainActivity.AppendLog)(context, "Binary path: ${mtgBinary.absolutePath}")
 
             val processBuilder = ProcessBuilder(
@@ -45,12 +45,12 @@ object MtgWrapper {
                     BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
                         var line: String?
                         while (reader.readLine().also { line = it } != null) {
-                            Log.d(TAG, "MTG stdout: $line")
+                            DebugLogStore.d(TAG, "MTG stdout: $line")
                             output.append(line).append("\n")
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error reading stdout", e)
+                    DebugLogStore.e(TAG, "Error reading stdout", e)
                 }
             }
 
@@ -59,12 +59,12 @@ object MtgWrapper {
                     BufferedReader(InputStreamReader(process.errorStream)).use { reader ->
                         var line: String?
                         while (reader.readLine().also { line = it } != null) {
-                            Log.e(TAG, "MTG stderr: $line")
+                            DebugLogStore.e(TAG, "MTG stderr: $line")
                             errorOutput.append(line).append("\n")
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error reading stderr", e)
+                    DebugLogStore.e(TAG, "Error reading stderr", e)
                 }
             }
 
@@ -81,23 +81,23 @@ object MtgWrapper {
             stdoutReader.join(1000)
             stderrReader.join(1000)
 
-            Log.d(TAG, "Process exit code: $exitCode")
+            DebugLogStore.d(TAG, "Process exit code: $exitCode")
 
             if (exitCode == 0) {
                 val version = output.toString().trim()
                 if (version.isNotEmpty()) {
-                    Log.d(TAG, "Get version successfully")
+                    DebugLogStore.d(TAG, "Get version successfully")
                     version
                 } else {
-                    Log.e(TAG, "version is empty")
+                    DebugLogStore.e(TAG, "version is empty")
                     null
                 }
             } else {
-                Log.e(TAG, "get version failed with exit code: $exitCode")
+                DebugLogStore.e(TAG, "get version failed with exit code: $exitCode")
                 null
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting version", e)
+            DebugLogStore.e(TAG, "Error getting version", e)
             null
         }
     }
@@ -106,12 +106,12 @@ object MtgWrapper {
         return try {
             val mtgBinary = getMtgBinary(context)
             if (mtgBinary == null) {
-                Log.e(TAG, "Failed to get MTG binary")
+                DebugLogStore.e(TAG, "Failed to get MTG binary")
                 return null
             }
 
-            Log.d(TAG, "Generating secret with domain: $domain")
-            Log.d(TAG, "Binary path: ${mtgBinary.absolutePath}")
+            DebugLogStore.d(TAG, "Generating secret with domain: $domain")
+            DebugLogStore.d(TAG, "Binary path: ${mtgBinary.absolutePath}")
 
             val processBuilder = ProcessBuilder(
                 mtgBinary.absolutePath,
@@ -133,13 +133,13 @@ object MtgWrapper {
                     BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
                         var line: String?
                         while (reader.readLine().also { line = it } != null) {
-                            Log.d(TAG, "MTG stdout: $line")
+                            DebugLogStore.d(TAG, "MTG stdout: $line")
                             output.append(line).append("\n")
                             //AppendLog(context, "MTG stdout: $line")
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error reading stdout", e)
+                    DebugLogStore.e(TAG, "Error reading stdout", e)
                 }
             }
 
@@ -148,13 +148,13 @@ object MtgWrapper {
                     BufferedReader(InputStreamReader(process.errorStream)).use { reader ->
                         var line: String?
                         while (reader.readLine().also { line = it } != null) {
-                            Log.e(TAG, "MTG stderr: $line")
+                            DebugLogStore.e(TAG, "MTG stderr: $line")
                             errorOutput.append(line).append("\n")
                             //AppendLog(context, "MTG stderr: $line")
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error reading stderr", e)
+                    DebugLogStore.e(TAG, "Error reading stderr", e)
                 }
             }
 
@@ -171,25 +171,25 @@ object MtgWrapper {
             stdoutReader.join(1000)
             stderrReader.join(1000)
 
-            Log.d(TAG, "Process exit code: $exitCode")
+            DebugLogStore.d(TAG, "Process exit code: $exitCode")
 
             if (exitCode == 0) {
                 val secret = output.toString().trim()
                 if (secret.isNotEmpty()) {
-                    Log.d(TAG, "Generated secret successfully")
+                    DebugLogStore.d(TAG, "Generated secret successfully")
                     //AppendLog(context, "Generated secret successfully")
                     secret
                 } else {
-                    Log.e(TAG, "Secret is empty")
+                    DebugLogStore.e(TAG, "Secret is empty")
                     null
                 }
             } else {
-                Log.e(TAG, "generate-secret failed with exit code: $exitCode")
+                DebugLogStore.e(TAG, "generate-secret failed with exit code: $exitCode")
                 //AppendLog(context, "generate-secret failed with exit code: $exitCode")
                 null
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error generating secret", e)
+            DebugLogStore.e(TAG, "Error generating secret", e)
             null
         }
     }
@@ -200,13 +200,13 @@ object MtgWrapper {
 
             val mtgBinary = getMtgBinary(context)
             if (mtgBinary == null) {
-                Log.e(TAG, "Failed to get MTG binary")
+                DebugLogStore.e(TAG, "Failed to get MTG binary")
                 return false
             }
 
-            Log.d(TAG, "Starting proxy on $bindAddress")
+            DebugLogStore.d(TAG, "Starting proxy on $bindAddress")
             val command = buildCommand(context, mtgBinary.absolutePath, bindAddress, secret)
-            Log.d(TAG, "MTG command: ${command.joinToString(" ")}")
+            DebugLogStore.d(TAG, "MTG command: ${command.joinToString(" ")}")
 
             val processBuilder = ProcessBuilder(command)
 
@@ -219,14 +219,14 @@ object MtgWrapper {
                     BufferedReader(InputStreamReader(mtgProcess!!.inputStream)).use { reader ->
                         var line: String?
                         while (reader.readLine().also { line = it } != null) {
-                            Log.d(TAG, "MTG: $line")
+                            DebugLogStore.d(TAG, "MTG: $line")
                             //AppendLog(context, "MTG: $line")
                         }
                     }
                 } catch (e: InterruptedIOException) {
-                    Log.d(TAG, "MTG output reader interrupted")
+                    DebugLogStore.d(TAG, "MTG output reader interrupted")
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error reading MTG output", e)
+                    DebugLogStore.e(TAG, "Error reading MTG output", e)
                 }
             }
 
@@ -235,14 +235,14 @@ object MtgWrapper {
                     BufferedReader(InputStreamReader(mtgProcess!!.errorStream)).use { reader ->
                         var line: String?
                         while (reader.readLine().also { line = it } != null) {
-                            Log.e(TAG, "MTG error: $line")
+                            DebugLogStore.e(TAG, "MTG error: $line")
                             //AppendLog(context, "MTG error: $line")
                         }
                     }
                 } catch (e: InterruptedIOException) {
-                    Log.d(TAG, "MTG error reader interrupted")
+                    DebugLogStore.d(TAG, "MTG error reader interrupted")
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error reading MTG errors", e)
+                    DebugLogStore.e(TAG, "Error reading MTG errors", e)
                 }
             }
 
@@ -253,14 +253,14 @@ object MtgWrapper {
 
             val isAlive = isProcessAlive(mtgProcess)
             if (isAlive) {
-                Log.d(TAG, "MTG proxy started successfully on $bindAddress")
+                DebugLogStore.d(TAG, "MTG proxy started successfully on $bindAddress")
             } else {
-                Log.e(TAG, "MTG process died immediately")
+                DebugLogStore.e(TAG, "MTG process died immediately")
             }
 
             isAlive
         } catch (e: Exception) {
-            Log.e(TAG, "Error starting proxy", e)
+            DebugLogStore.e(TAG, "Error starting proxy", e)
             false
         }
     }
@@ -308,11 +308,11 @@ object MtgWrapper {
                         process.destroyForcibly()
                     }
 
-                    Log.d(TAG, "MTG proxy stopped")
+                    DebugLogStore.d(TAG, "MTG proxy stopped")
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error stopping proxy", e)
+            DebugLogStore.e(TAG, "Error stopping proxy", e)
         } finally {
             mtgProcess = null
             stdoutThread = null
@@ -337,14 +337,14 @@ object MtgWrapper {
             val nativeLibFile = File(nativeLibDir, "libmtg.so")
 
             if (nativeLibFile.exists() && nativeLibFile.canExecute()) {
-                Log.d(TAG, "Using native library: ${nativeLibFile.absolutePath}")
+                DebugLogStore.d(TAG, "Using native library: ${nativeLibFile.absolutePath}")
                 return nativeLibFile
             }
 
-            Log.e(TAG, "Native library not found or not executable")
+            DebugLogStore.e(TAG, "Native library not found or not executable")
             null
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting MTG binary", e)
+            DebugLogStore.e(TAG, "Error getting MTG binary", e)
             null
         }
     }
