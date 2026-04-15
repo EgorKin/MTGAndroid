@@ -4,6 +4,7 @@ import android.util.Patterns
 import java.net.InetAddress
 
 object ValidationUtils {
+    private val HEX_REGEX = Regex("^[0-9a-fA-F]+$")
 
     fun isValidIpAddress(ip: String): Boolean {
         if (ip.isEmpty()) return false
@@ -47,4 +48,29 @@ object ValidationUtils {
         return value in 1..10
     }
 
+    fun isValidMtgSecret(secret: String): Boolean {
+        val trimmed = secret.trim()
+        if (trimmed.length < 32 || trimmed.length % 2 != 0) return false
+        return HEX_REGEX.matches(trimmed)
+    }
+
+    fun isValidWsSecret(secret: String): Boolean {
+        val trimmed = secret.trim()
+        if (!isValidMtgSecret(trimmed)) return false
+        // ws mode prefers fake-tls format.
+        return trimmed.startsWith("ee", ignoreCase = true) || trimmed.length == 32
+    }
+
+    fun isValidSecretForMode(secret: String, transportMode: String): Boolean {
+        return if (transportMode == "websocket") {
+            isValidWsSecret(secret)
+        } else {
+            isValidMtgSecret(secret)
+        }
+    }
+
+    fun isValidProxySecret(secret: String): Boolean {
+        return isValidMtgSecret(secret)
+    }
+    
 }
