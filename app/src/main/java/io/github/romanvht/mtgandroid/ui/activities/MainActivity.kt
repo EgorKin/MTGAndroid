@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -22,6 +23,7 @@ import io.github.romanvht.mtgandroid.data.SERVICE_STOPPED_BROADCAST
 import io.github.romanvht.mtgandroid.databinding.ActivityMainBinding
 import io.github.romanvht.mtgandroid.service.ServiceManager
 import io.github.romanvht.mtgandroid.utils.*
+import androidx.core.net.toUri
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -167,6 +169,7 @@ class MainActivity : AppCompatActivity() {
         binding.telegramLinkInput.isClickable = true
         binding.telegramLinkInput.setOnClickListener {
             copyLinkToClipboard()
+            openInTelegram()
         }
     }
 
@@ -193,6 +196,21 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    private fun openInTelegram() {
+        val text = binding.telegramLinkInput.text.toString()
+
+        if (text.isEmpty() || text.contains(getString(R.string.error_empty_secret))) {
+            return
+        }
+
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, text.toUri())
+            startActivity(intent)
+        } catch (e: Exception) {
+            // skip
+        }
+    }
+    
     private fun updateUIState() {
         if (isRunning) {
             binding.statusText.text = getString(R.string.status_running)
