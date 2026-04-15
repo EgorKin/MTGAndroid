@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.preference.EditTextPreference
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import io.github.romanvht.mtgandroid.R
@@ -11,6 +12,8 @@ import io.github.romanvht.mtgandroid.utils.FormatUtils
 import io.github.romanvht.mtgandroid.utils.MtgWrapper
 import io.github.romanvht.mtgandroid.utils.PreferencesUtils
 import io.github.romanvht.mtgandroid.utils.ValidationUtils
+import io.github.romanvht.mtgandroid.utils.DebugLogStore
+import io.github.romanvht.mtgandroid.utils.SecretUtils
 import androidx.core.net.toUri
 import io.github.romanvht.mtgandroid.BuildConfig
 
@@ -54,9 +57,16 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
 
             val cleanDomain = FormatUtils.cleanDomain(domain)
-            val secret = MtgWrapper.generateSecret(requireContext(), cleanDomain)
+            val transportMode = PreferencesUtils.getTransportMode(requireContext())
+            val secret = if (transportMode == "websocket") {
+                DebugLogStore.i("SettingsFragment", "Generating secret via SecretUtils for websocket mode")
+                SecretUtils.generateFakeTlsSecret(cleanDomain)
+            } else {
+                DebugLogStore.i("SettingsFragment", "Generating secret via native mtg for legacy mode")
+                MtgWrapper.generateSecret(requireContext(), cleanDomain)
+            }
 
-            if (secret != null) {
+            if (secret != null && ValidationUtils.isValidSecretForMode(secret, transportMode)) {
                 PreferencesUtils.setSecret(requireContext(), secret)
 
                 findPreference<EditTextPreference>("secret")?.text = secret
@@ -67,6 +77,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     Toast.LENGTH_SHORT
                 ).show()
             } else {
+                DebugLogStore.e("SettingsFragment", "Secret generation failed. Check mtg binary availability")
                 Toast.makeText(
                     requireContext(),
                     R.string.error_generate_secret,
@@ -151,6 +162,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 secret?.ifEmpty { getString(R.string.error_empty_secret) }
                     ?: getString(R.string.error_empty_secret)
             }
+            setOnPreferenceChangeListener { _, newValue ->
+                val secret = (newValue as String).trim()
+                val transportMode = PreferencesUtils.getTransportMode(requireContext())
+                val isValid = ValidationUtils.isValidSecretForMode(secret, transportMode)
+                if (!isValid) {
+                    Toast.makeText(
+                        requireContext(),
+                        R.string.error_invalid_secret,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                isValid
+            }
         }
     }
 
@@ -185,6 +209,26 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         ).show()
                     }
                 }
+            }
+        }
+
+        findPreference<ListPreference>("transport_mode")?.apply {
+            summaryProvider = ListPreference.SimpleSummaryProvider.getInstance()
+        }
+
+        findPreference<EditTextPreference>("ws_template")?.apply {
+            summaryProvider = EditTextPreference.SimpleSummaryProvider.getInstance()
+            setOnPreferenceChangeListener { _, newValue ->
+                val value = (newValue as String).trim()
+                val isValid = value.startsWith("wss://") && value.contains("/apiws")
+                if (!isValid) {
+                    Toast.makeText(
+                        requireContext(),
+                        R.string.error_invalid_ws_template,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                isValid
             }
         }
 
@@ -226,9 +270,16 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun generateSecretForDomain(cleanDomain: String) {
-        val secret = MtgWrapper.generateSecret(requireContext(), cleanDomain)
+        val transportMode = PreferencesUtils.getTransportMode(requireContext())
+        val secret = if (transportMode == "websocket") {
+            DebugLogStore.i("SettingsFragment", "Auto-generating secret via SecretUtils for websocket mode")
+            SecretUtils.generateFakeTlsSecret(cleanDomain)
+        } else {
+            DebugLogStore.i("SettingsFragment", "Auto-generating secret via native mtg for legacy mode")
+            MtgWrapper.generateSecret(requireContext(), cleanDomain)
+        }
 
-        if (secret != null) {
+        if (secret != null && ValidationUtils.isValidSecretForMode(secret, transportMode)) {
             PreferencesUtils.setSecret(requireContext(), secret)
             findPreference<EditTextPreference>("secret")?.text = secret
 
@@ -238,6 +289,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 Toast.LENGTH_SHORT
             ).show()
         } else {
+            DebugLogStore.e("SettingsFragment", "Auto secret generation failed for domain=$cleanDomain")
             Toast.makeText(
                 requireContext(),
                 R.string.error_generate_secret,
